@@ -1,0 +1,48 @@
+# This is a basic workflow that is manually triggered
+
+name: instantiate
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      id:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Id string'
+        # Default value if no value is explicitly provided
+        default: 'none'
+        # Input has to be provided for the workflow to run
+        required: true
+      business_name:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Name of Business'
+        # Default value if no value is explicitly provided
+        default: 'none'
+        # Input has to be provided for the workflow to run
+        required: true
+      business_type:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Business type'
+        # Default value if no value is explicitly provided
+        default: 'restaurant'
+        # Input has to be provided for the workflow to run
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+      - run: |
+          test -e "docs/${{ github.event.inputs.id }}" && exit 1
+          cp -rp "templates/${{ github.event.inputs.business_type }}" "docs/${{ github.event.inputs.id }}"
+          ./customize "docs/${{ github.event.inputs.id }}" "docs/${{ github.event.inputs.id }}" "docs/${{ github.event.inputs.business_name }}" "docs/${{ github.event.inputs.business_type }}"
+          git config user.name github-actions
+          git config user.email github-actions@dewmill.com
+          git add .
+          git commit -m "Add ${{ github.event.inputs.id }} for ${{ github.event.inputs.business_type }}"
+          git push
